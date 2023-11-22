@@ -57,10 +57,10 @@ repo_owner="unifreq"
 repo_branch="main"
 build_kernel=("5.10.100" "5.15.25")
 auto_kernel="true"
-custom_name="-ophub"
+custom_name=""
 #
 # Cross compile toolchain download mirror, run on ubuntu-20.04
-dev_repo="https://github.com/ophub/kernel/releases/download/dev"
+dev_repo="https://releases.linaro.org/archive/14.09/components/toolchain/binaries"
 #
 # Armbian download from: https://github.com/ophub/amlogic-s9xxx-armbian/releases
 #armbian_rootfs_file="armbian_22.05.0_aml_s922x_focal_5.15.35.tar.xz"
@@ -70,11 +70,11 @@ armbian_repo="https://github.com/SLAzurin/build-armbian-custom/releases/download
 armbian_rootfs_file="Armbian_21.11.0-trunk_Aml-s812_focal_current_5.14.0.img.xz"
 
 #
-# GCC download from: https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/downloads
-#gcc_file="gcc-arm-11.2-2022.02-x86_64-aarch64-none-linux-gnu.tar.xz"
-gcc_file="gcc-arm-11.2-2022.02-x86_64-arm-none-linux-gnueabihf.tar.xz"
+# GCC download from: https://releases.linaro.org/archive/14.09/components/toolchain/binaries/
+gcc_file="gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux.tar.xz"
 #
 # Clang download from: https://github.com/llvm/llvm-project/releases
+clang_repo=https://github.com/llvm/llvm-project/releases/download/llvmorg-13.0.0
 clang_file="clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-20.04.tar.xz"
 #
 # QEMU BINARY
@@ -188,12 +188,13 @@ toolchain_check() {
         # Download clang for Ubuntu focal
         if [[ ! -d "${toolchain_path}/${clang_file//.tar.xz/}/bin" ]]; then
             echo -e "${INFO} Download clang [ ${clang_file} ] ..."
-            wget -c "${dev_repo}/${clang_file}" -O "${toolchain_path}/${clang_file}" >/dev/null 2>&1 && sync
+            wget -c "${clang_repo}/${clang_file}" -O "${toolchain_path}/${clang_file}" >/dev/null 2>&1 && sync
             tar -xJf ${toolchain_path}/${clang_file} -C ${toolchain_path} && sync
             rm -f ${toolchain_path}/${clang_file} && sync
             [[ -d "${toolchain_path}/${clang_file//.tar.xz/}/bin" ]] || error_msg "The clang is not set!"
         fi
     fi
+    
 
     # Download armbian
     if [[ ! -f "${armbian_file}" ]]; then
@@ -358,10 +359,10 @@ compile_kernel() {
     export LOCALVERSION="${custom_name}"
     if [[ "${host_release}" == "jammy" ]]; then
         export CROSS_COMPILE="arm-linux-gnueabihf-"
-        export CC="clang"
-        export LD="ld.lld"
+        #export CC="clang"
+        #export LD="ld.lld"
     else
-        export CROSS_COMPILE="${toolchain_path}/${gcc_file//.tar.xz/}/bin/arm-none-linux-gnueabihf-"
+        export CROSS_COMPILE="${toolchain_path}/${gcc_file//.tar.xz/}/bin/arm-linux-gnueabihf-"
         export CC="${toolchain_path}/${clang_file//.tar.xz/}/bin/clang"
         export LD="${toolchain_path}/${clang_file//.tar.xz/}/bin/ld.lld"
         #
@@ -377,7 +378,7 @@ compile_kernel() {
         echo "PATH=${path_clang}" >>/etc/profile && sync
         source /etc/profile
     fi
-
+    
     # Show variable
     echo -e "${INFO} ARCH: [ ${ARCH} ]"
     echo -e "${INFO} LOCALVERSION: [ ${LOCALVERSION} ]"
@@ -386,13 +387,15 @@ compile_kernel() {
     echo -e "${INFO} LD: [ ${LD} ]"
     # Set generic make string
     MAKE_SET_STRING=" ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} CC=${CC} LD=${LD} LLVM=1 LLVM_IAS=1 LOCALVERSION=${LOCALVERSION} LOADADDR=0x00208000 "
+    #MAKE_SET_STRING=" ARCH=${ARCH} "
 
     # Make clean/mrproper
-    make ${MAKE_SET_STRING} clean
+    #make ${MAKE_SET_STRING} clean
 
     # Make menuconfig
     #make ${MAKE_SET_STRING} menuconfig
-
+    make odroidc_defconfig
+    
     # Check .config file
     if [[ ! -s ".config" ]]; then
         # Copy config file
@@ -408,31 +411,39 @@ compile_kernel() {
     #
     sed -i "s|CONFIG_LOCALVERSION=.*|CONFIG_LOCALVERSION=\"\"|" .config
     sync
-
+    
+    
     # Enable/Disabled Linux Kernel Clang LTO
-    kernel_x="$(echo "${kernel_version}" | cut -d '.' -f1)"
-    kernel_y="$(echo "${kernel_version}" | cut -d '.' -f2)"
-    if [[ "${kernel_x}" -ge "6" ]] || [[ "${kernel_x}" -eq "5" && "${kernel_y}" -ge "12" ]]; then
-        scripts/config -e LTO_CLANG_THIN
-    else
-        scripts/config -d LTO_CLANG_THIN
-    fi
+    #kernel_x="$(echo "${kernel_version}" | cut -d '.' -f1)"
+    #kernel_y="$(echo "${kernel_version}" | cut -d '.' -f2)"
+    #if [[ "${kernel_x}" -ge "6" ]] || [[ "${kernel_x}" -eq "5" && "${kernel_y}" -ge "12" ]]; then
+    #    scripts/config -e LTO_CLANG_THIN
+    #else
+    #    scripts/config -d LTO_CLANG_THIN
+    #fi
 
     # Make kernel
     echo -e "${STEPS} Start compilation kernel [ ${local_kernel_path} ]..."
     PROCESS="$(cat /proc/cpuinfo | grep "processor" | wc -l)"
     [[ -z "${PROCESS}" ]] && PROCESS="1" && echo "PROCESS: 1"
-    make ${MAKE_SET_STRING} Image uImage zImage modules dtbs -j${PROCESS}
+    #make ${MAKE_SET_STRING} Image uImage zImage modules dtbs -j${PROCESS}
+    make -j${PROCESS}
     [[ "${?}" -eq "0" ]] && echo -e "${SUCCESS} The kernel is compiled successfully."
-
+    
+    make -j${PROCESS} modules
+    make uImage
+    make dtbs
+    
     # Install modules
     echo -e "${STEPS} Install modules ..."
-    make ${MAKE_SET_STRING} INSTALL_MOD_PATH=${out_kernel}/modules modules_install
+    #make ${MAKE_SET_STRING} INSTALL_MOD_PATH=${out_kernel}/modules modules_install
+    make INSTALL_MOD_PATH=${out_kernel}/modules modules_install
     [[ "${?}" -eq "0" ]] && echo -e "${SUCCESS} The modules is installed successfully."
 
     # Install headers
     echo -e "${STEPS} Install headers ..."
     #make ${MAKE_SET_STRING} INSTALL_HDR_PATH=${out_kernel}/header headers_install
+    #make INSTALL_HDR_PATH=${out_kernel}/header headers_install
     headers_install
     [[ "${?}" -eq "0" ]] && echo -e "${SUCCESS} The headers is installed successfully."
 }

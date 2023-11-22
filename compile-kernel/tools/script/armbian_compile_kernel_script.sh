@@ -53,7 +53,7 @@ repo_owner="unifreq"
 repo_branch="main"
 build_kernel=("5.10.100" "5.15.25")
 auto_kernel="true"
-custom_name="-ophub"
+custom_name=""
 #
 # Compile toolchain download mirror, run on Armbian
 dev_repo="https://github.com/ophub/kernel/releases/download/dev"
@@ -161,6 +161,8 @@ toolchain_check() {
             [[ -d "${toolchain_path}/${clang_file//.tar.xz/}/bin" ]] || error_msg "The clang is not set!"
         fi
     fi
+    
+    arm-linux-gnueabihf-gcc -v
 }
 
 query_version() {
@@ -280,6 +282,9 @@ compile_kernel() {
     # Set compilation parameters
     export ARCH="arm"
     export LOCALVERSION="${custom_name}"
+    export CROSS_COMPILE=arm-linux-gnueabihf-
+    arm-linux-gnueabihf-gcc -v
+    
     if [[ "${host_release}" == "jammy" ]]; then
         export CC="clang"
         export LD="ld.lld"
@@ -306,7 +311,8 @@ compile_kernel() {
     echo -e "${INFO} CC: [ ${CC} ]"
     echo -e "${INFO} LD: [ ${LD} ]"
     # Set generic make string
-    MAKE_SET_STRING=" ARCH=${ARCH} CC=${CC} LD=${LD} LLVM=1 LLVM_IAS=1 LOCALVERSION=${LOCALVERSION} "
+    #MAKE_SET_STRING=" ARCH=${ARCH} CC=${CC} LD=${LD} LLVM=1 LLVM_IAS=1 LOCALVERSION=${LOCALVERSION} "
+    MAKE_SET_STRING=" ARCH=${ARCH} "
 
     # Make clean/mrproper
     make ${MAKE_SET_STRING} clean
@@ -343,7 +349,7 @@ compile_kernel() {
     echo -e "${STEPS} Start compilation kernel [ ${local_kernel_path} ]..."
     PROCESS="$(cat /proc/cpuinfo | grep "processor" | wc -l)"
     [[ -z "${PROCESS}" ]] && PROCESS="1" && echo "PROCESS: 1"
-    make ${MAKE_SET_STRING} Image modules dtbs -j${PROCESS}
+    make ${MAKE_SET_STRING} uImage Image modules dtbs -j${PROCESS}
     [[ "${?}" -eq "0" ]] && echo -e "${SUCCESS} The kernel is compiled successfully."
 
     # Install modules
@@ -370,6 +376,7 @@ generate_uinitrd() {
     cp -f ${kernel_path}/${local_kernel_path}/System.map /boot/System.map-${kernel_outname}
     cp -f ${kernel_path}/${local_kernel_path}/.config /boot/config-${kernel_outname}
     cp -f ${kernel_path}/${local_kernel_path}/arch/arm/boot/Image /boot/vmlinuz-${kernel_outname}
+    cp -f ${kernel_path}/${local_kernel_path}/arch/arm/boot/uImage /boot/uImage-${kernel_outname}
     sync
     #echo -e "${INFO} Kernel copy results in the [ /boot ] directory: \n$(ls -l /boot) \n"
 

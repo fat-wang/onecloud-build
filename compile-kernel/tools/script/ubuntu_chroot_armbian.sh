@@ -39,13 +39,17 @@ chroot_env_init() {
 chroot_generate_uinitrd() {
     cd /boot
     echo -e "${STEPS} Generate uInitrd file..."
-    #echo -e "${INFO} File status in the /boot directory before the update: \n$(ls -l .) \n"
-
+    echo -e "${INFO} File status in the /boot directory before the update: \n$(ls -l .) \n"
+    
     cp -f zImage-${chroot_kernel_version} zImage 2>/dev/null && sync
     cp -f uImage-${chroot_kernel_version} uImage 2>/dev/null && sync
+    
+    mkdir -p /var/tmp
+    mount -t tmpfs none /var/tmp
 
     # Generate uInitrd file directly under armbian system
-    update-initramfs -c -k ${chroot_kernel_version} 2>/dev/null
+    #update-initramfs -c -k ${chroot_kernel_version} 2>/dev/null
+    update-initramfs -c -k ${chroot_kernel_version}
 
     if [[ -f "uInitrd" ]]; then
         echo -e "${SUCCESS} The initrd.img and uInitrd file is Successfully generated."
@@ -53,8 +57,10 @@ chroot_generate_uinitrd() {
     else
         echo -e "${WARNING} The initrd.img and uInitrd file not updated."
     fi
+    
+    umount /var/tmp
 
-    echo -e "${INFO} File situation in the /boot directory after update: \n$(ls -l *${chroot_kernel_version})"
+    echo -e "${INFO} File situation in the /boot directory after update: \n$(ls -l)"
 }
 
 echo -e "${INFO} Current system: [ ${chroot_arch_info} ]"
