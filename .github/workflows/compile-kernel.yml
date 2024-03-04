@@ -55,7 +55,7 @@ jobs:
           echo "COMPILE_STARTINGTIME=$(date +"%m.%d.%H%M")" >> $GITHUB_ENV
 
       - name: Compile the kernel for OneCloud
-        uses: fat-wang/amlogic-onecloud-build@main
+        uses: fat-wang/onecloud-build@main
         with:
           build_target: kernel
           kernel_repo: ${{ github.event.inputs.kernel_repo }}
