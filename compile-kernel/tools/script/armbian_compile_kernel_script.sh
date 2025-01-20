@@ -308,7 +308,7 @@ compile_kernel() {
     echo -e "${INFO} CC: [ ${CC} ]"
     echo -e "${INFO} LD: [ ${LD} ]"
     # Set generic make string
-    MAKE_SET_STRING=" ARCH=${ARCH} CC=${CC} LD=${LD} LLVM=1 LLVM_IAS=1 LOCALVERSION=${LOCALVERSION} -mfpu=neon "
+    MAKE_SET_STRING=" ARCH=${ARCH} CC=${CC} LD=${LD} V=1 LLVM=1 LLVM_IAS=1 LOCALVERSION=${LOCALVERSION} -mfpu=neon "
 
     # Make clean/mrproper
     make ${MAKE_SET_STRING} clean
