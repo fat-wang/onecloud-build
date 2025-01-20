@@ -47,7 +47,7 @@ toolchain_path="/usr/local/toolchain"
 #
 # Set the default value of the [ -r ] parameter
 # When set to [ -r kernel.org ], Kernel download from kernel.org
-kernel_org_repo="https://cdn.kernel.org/pub/linux/kernel/v5.x/"
+kernel_org_repo="https://cdn.kernel.org/pub/linux/kernel/v6.x/"
 # Set the default for downloading kernel sources from github.com
 repo_owner="unifreq"
 repo_branch="main"
