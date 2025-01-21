@@ -14,9 +14,9 @@ on:
         required: false
         default: "fat-wang/xdarklight-linux-6.12.x@main"
       kernel_version:
-        description: "Kernel version: 6.12.8"
+        description: "Kernel version: 6.12.10"
         required: false
-        default: "6.12.8"
+        default: "6.12.10"
       kernel_auto:
         description: "Auto use the latest kernel"
         required: false
