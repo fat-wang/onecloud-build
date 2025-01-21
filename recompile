@@ -65,9 +65,11 @@ dev_repo="https://github.com/ophub/kernel/releases/download/dev"
 # Armbian download from: https://github.com/ophub/amlogic-s9xxx-armbian/releases
 #armbian_rootfs_file="armbian_22.05.0_aml_s922x_focal_5.15.35.tar.xz"
 
-armbian_repo="https://github.com/SLAzurin/build-armbian-custom/releases/download/v2021.11-s8xx"
 # Armbian download from: https://github.com/SLAzurin/build-armbian-custom/releases
-armbian_rootfs_file="Armbian_21.11.0-trunk_Aml-s812_focal_current_5.14.0.img.xz"
+# armbian_repo="https://github.com/SLAzurin/build-armbian-custom/releases/download/v2021.11-s8xx"
+# armbian_rootfs_file="Armbian_21.11.0-trunk_Aml-s812_focal_current_5.14.0.img.xz"
+armbian_repo="https://github.com/hzyitc/armbian-onecloud/releases/download/ci-20240311-162146-UTC"
+armbian_rootfs_file="Armbian-unofficial_24.5.0-trunk_Onecloud_bookworm_current_6.6.21.img.xz"
 
 #
 # GCC download from: https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/downloads
@@ -385,7 +387,7 @@ compile_kernel() {
     echo -e "${INFO} CC: [ ${CC} ]"
     echo -e "${INFO} LD: [ ${LD} ]"
     # Set generic make string
-    MAKE_SET_STRING=" ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} CC=${CC} LD=${LD} V=1 LLVM=1 LLVM_IAS=1 LOCALVERSION=${LOCALVERSION} LOADADDR=0x00208000"
+    MAKE_SET_STRING=" ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} CC=${CC} LD=${LD} LLVM=1 LLVM_IAS=1 LOCALVERSION=${LOCALVERSION} LOADADDR=0x00208000"
 
     # Make clean/mrproper
     make ${MAKE_SET_STRING} clean
