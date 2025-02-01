@@ -531,7 +531,7 @@ packit_kernel() {
     # echo -e "${SUCCESS} The [ dtb-rockchip-${kernel_outname}.tar.gz ] file is packaged."
 
     cd ${out_kernel}/dtb/amlogic
-    cp -f ${kernel_path}/${local_kernel_path}/arch/arm/boot/dts/amlogic/meson8b*.dtb . && chmod +x * && sync
+    cp -f ${kernel_path}/${local_kernel_path}/arch/arm/boot/dts/meson8b*.dtb . && chmod +x * && sync
     tar -czf dtb-${kernel_outname}.tar.gz * && sync
     mv -f *.tar.gz ${out_kernel}/${kernel_version} && sync
     echo -e "${SUCCESS} The [ dtb-${kernel_outname}.tar.gz ] file is packaged."

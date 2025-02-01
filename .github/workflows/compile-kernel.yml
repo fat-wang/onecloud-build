@@ -12,11 +12,11 @@ on:
       kernel_repo:
         description: "Source: kernel.org / unifreq"
         required: false
-        default: "fat-wang/xdarklight-linux-6.6.x@main"
+        default: "fat-wang/xdarklight-linux-6.1.x@main"
       kernel_version:
-        description: "Kernel version: 6.6.72"
+        description: "Kernel version: 6.1.126"
         required: false
-        default: "6.6.72"
+        default: "6.1.126"
       kernel_auto:
         description: "Auto use the latest kernel"
         required: false
